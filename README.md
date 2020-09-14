@@ -5,7 +5,7 @@
 ### 1.External Dependencies
 Before running MioDB, it's essential that you have already install dependencies listing below.
 * cmake (>=3.9.0)
-* Intel Optane DC Persistent Memory configuration: install ipmctl & ndctl first, then use commands below.[Details](https://stevescargall.com/2019/07/09/how-to-extend-volatile-system-memory-ram-using-persistent-memory-on-linux/?tdsourcetag=s_pctim_aiomsg)
+* Intel Optane DC Persistent Memory configuration: install ipmctl & ndctl first, then use commands below. See [Details](https://stevescargall.com/2019/07/09/how-to-extend-volatile-system-memory-ram-using-persistent-memory-on-linux/?tdsourcetag=s_pctim_aiomsg)
 ```
 $ sudo ipmctl delete -dimm -pcd
 $ sudo ipmctl create -goal PersistentMemoryType=AppDirect
