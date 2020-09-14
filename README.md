@@ -1,4 +1,4 @@
-# mioDB
+# MioDB
 MioDB: Devouring Data Byte-addressable LSM-based KV Stores for Hybrid Memory
 
 ## Compilation and Run
@@ -8,9 +8,9 @@ MioDB access NVM via NUMA
 ### Compilation
 1. modify ``db/skiplist.h`` & ``util/arena.h``
 ```
-> #defile NUMA_NODE your_nvm_node_num
+> #define NUMA_NODE your_nvm_node_num
 ```
-2. build miodb via cmake
+2. build MioDB via cmake
 ```
 > mkdir -p build && cd build
 > cmake -DCMAKE_BUILD_TYPE=Release .. && cmake --build .
