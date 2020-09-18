@@ -18,10 +18,6 @@ $ daxctl reconfigure-device --mode=system-ram --no-online daxX.Y
 ```
 
 ### 2. Compilation
-* Modify ``db/skiplist.h`` & ``util/arena.h``
-```
-#define NUMA_NODE your_nvm_node_num
-```
 * Build MioDB via cmake
 ```
 $ mkdir -p build && cd build
