@@ -113,6 +113,12 @@ static int FLAGS_bits_per_key = 16;
 
 static int FLAGS_keys_per_datatable = 65536;
 
+static int FLAGS_dram_node = 0;
+
+static int FLAGS_nvm_node = 2;
+
+static int FLAGS_nvm_next_node = 4;
+
 // Use the db with the following name.
 static const char* FLAGS_db = nullptr;
 
@@ -705,6 +711,9 @@ class Benchmark {
     options.reuse_logs = FLAGS_reuse_logs;
 	options.bits_per_key = FLAGS_bits_per_key;
 	options.keys_per_datatable = FLAGS_keys_per_datatable;
+	options.dram_node = FLAGS_dram_node;
+	options.nvm_node = FLAGS_nvm_node;
+	options.nvm_next_node = FLAGS_nvm_next_node;
     Status s = DB::Open(options, FLAGS_db, &db_);
     if (!s.ok()) {
       std::fprintf(stderr, "open error: %s\n", s.ToString().c_str());
@@ -952,6 +961,9 @@ int main(int argc, char** argv) {
   FLAGS_block_size = leveldb::Options().block_size;
   FLAGS_open_files = leveldb::Options().max_open_files;
   FLAGS_keys_per_datatable = leveldb::Options().keys_per_datatable;
+  FLAGS_dram_node = leveldb::Options().dram_node;
+  FLAGS_nvm_node = leveldb::Options().nvm_node;
+  FLAGS_nvm_next_node = leveldb::Options().nvm_next_node;
   FLAGS_bits_per_key = leveldb::Options().bits_per_key;
   std::string default_db_path;
 
@@ -996,6 +1008,12 @@ int main(int argc, char** argv) {
       FLAGS_db = argv[i] + 5;
 	} else if (sscanf(argv[i], "--keys_per_datatable=%d%c", &n, &junk) == 1) {
 	  FLAGS_keys_per_datatable = n;
+	} else if (sscanf(argv[i], "--dram_node=%d%c", &n, &junk) == 1) {
+	  FLAGS_dram_node = n;
+	} else if (sscanf(argv[i], "--nvm_node=%d%c", &n, &junk) == 1) {
+	  FLAGS_nvm_node = n;
+	} else if (sscanf(argv[i], "--nvm_next_node=%d%c", &n, &junk) == 1) {
+	  FLAGS_nvm_next_node = n;
 	} else if (sscanf(argv[i], "--bits_per_key=%d%c", &n, &junk) == 1) {
 	  FLAGS_bits_per_key = n;
     } else {

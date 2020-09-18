@@ -17,7 +17,7 @@ MergeableBloom::MergeableBloom(const Options& options_): bits_per_key_(options_.
   if (k_ < 1) k_ = 1;
   if (k_ > 30) k_ = 30;
 
-  result_ = (char*)numa_alloc_onnode(result_size_, 1);
+  result_ = (char*)numa_alloc_onnode(result_size_, options_.dram_node);
 }
 
 MergeableBloom::~MergeableBloom() {

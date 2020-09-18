@@ -4,7 +4,7 @@
 
 #include "util/arena.h"
 #include "string.h"
-#define NUMA_NODE 2
+#include "db/global.h"
 
 namespace leveldb {
 
@@ -105,7 +105,8 @@ char* Arena::AllocateNewBlock(size_t block_bytes) {
   if (IsMemTable) {
     result = new char[block_bytes];
   } else {
-    result = (char*)numa_alloc_onnode(block_bytes, NUMA_NODE);
+    NvmNodeSizeRecord(block_bytes);
+    result = (char*)numa_alloc_onnode(block_bytes, nvm_node);
     memory_usage_.fetch_add(block_bytes + sizeof(char*),
                               std::memory_order_relaxed);
     block_size_.push_back(block_bytes);

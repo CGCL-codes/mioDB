@@ -42,7 +42,14 @@ struct LEVELDB_EXPORT Options {
   size_t bits_per_key = 16;
 
   // keys in datatable in the highest level which sets bloom filter
-  int keys_per_datatable = 65536;
+  int keys_per_datatable = 2097152;
+
+  // dram node in numa, default node0
+  int dram_node = 0;
+
+  // support two nvm numa nodes currently, default node2, node4
+  int nvm_node = 2;
+  int nvm_next_node = 4;
 
   // -------------------
   // Parameters that affect behavior
