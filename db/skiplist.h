@@ -39,7 +39,7 @@
 #include "leveldb/options.h"
 #include "util/mergeablebloom.h"
 #include "sys/time.h"
-#define NUMA_NODE 2
+#include "db/global.h"
 
 namespace leveldb {
 
@@ -834,12 +834,14 @@ SkipList<Key, Comparator>::SkipList(Comparator cmp)
 template <typename Key, class Comparator>
 typename SkipList<Key, Comparator>::Node* SkipList<Key, Comparator>::LastTableNewNode(
     const Key& key, int height, const size_t& len) {
-  char* copykey = (char*)numa_alloc_onnode(len, NUMA_NODE);
+  NvmNodeSizeRecord(len);
+  char* copykey = (char*)numa_alloc_onnode(len, nvm_node);
   wa += len;
   sizesum += len;
   memcpy(copykey, key, len);
   size_t tmp = sizeof(Node) + sizeof(std::atomic<Node*>) * (height - 1);
-  char* node_memory = (char*)numa_alloc_onnode(tmp, NUMA_NODE);
+  NvmNodeSizeRecord(tmp);
+  char* node_memory = (char*)numa_alloc_onnode(tmp, nvm_node);
   wa += tmp;
   sizesum += tmp;
   return new (node_memory) Node(copykey, len, height);

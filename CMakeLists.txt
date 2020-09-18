@@ -142,6 +142,8 @@ target_sources(leveldb
 # add by mio
     "db/datatable.cc"
     "db/datatable.h"
+    "db/global.h"
+    "db/global.cc"
     "db/repair.cc"
     "db/skiplist.h"
     "db/snapshot.h"

@@ -35,6 +35,8 @@
 #include "util/coding.h"
 #include "util/logging.h"
 #include "util/mutexlock.h"
+#include "db/global.h"
+#include "numa.h"
 
 namespace leveldb {
 
@@ -128,8 +130,8 @@ static int TableCacheSize(const Options& sanitized_options) {
 DBImpl::DBImpl(const Options& raw_options, const std::string& dbname)
     : env_(raw_options.env),
       stall_time_(0),  //add by mio
-	  dumptime(0),
-	  wa(0),
+	    dumptime(0),
+	    wa(0),
       internal_comparator_(raw_options.comparator),
       internal_filter_policy_(raw_options.filter_policy),
       options_(SanitizeOptions(dbname, &internal_comparator_,
@@ -159,6 +161,7 @@ DBImpl::DBImpl(const Options& raw_options, const std::string& dbname)
   for (int i = 0; i < config::kNumLevels; i++) {
     background_compaction_scheduled_[i] = false;
   }
+  NvmNodeSizeInit(options_);
 }
 
 DBImpl::~DBImpl() {
@@ -585,6 +588,16 @@ Status DBImpl::WriteLevel0Table(MemTable* mem, VersionEdit* edit) {
   //stats.bytes_written = meta.file_size;
   stats.bytes_written = meta.dt->table_.wa;
   stats_[0].Add(stats);
+
+  // nvm space
+  /*if (!nvm_node_has_changed) {
+    long tmp;
+    numa_node_size(nvm_node, &tmp);
+    if ((size_t)tmp < nvm_free_space) {
+      nvm_node = nvm_next_node;
+      nvm_node_has_changed = true;
+    }
+  }*/
   return s;
 }
 
@@ -987,7 +1000,7 @@ Status DBImpl::DoCompactionWork(CompactionState* compact) {
       //std::cout << "smalltable: " << smalldt << " smallestkey: " << smalldt->table_.smallest->key << std::endl;
       //std::cout << "largetable: " << largedt << std::endl;
       status = largedt->Compact(smalldt, compact->smallest_snapshot);
-	  wa += largedt->table_.wa;
+	    wa += largedt->table_.wa;
       //std::cout << "Last Compaction complete" << std::endl;
 
       out.dt = largedt;
@@ -1002,6 +1015,15 @@ Status DBImpl::DoCompactionWork(CompactionState* compact) {
       out.largest.DecodeFrom(Slice(p, len));
 
       out.file_size = largedt->ApproximateMemoryUsage();
+      // nvm space
+      /*if (!nvm_node_has_changed) {
+        long tmp;
+        numa_node_size(nvm_node, &tmp);
+        if ((size_t)tmp < nvm_free_space) {
+          nvm_node = nvm_next_node;
+          nvm_node_has_changed = true;
+        }
+      }*/
     } else {
       FileMetaData* oldfmd = compact->compaction->input(0, 0);
       FileMetaData* newfmd = compact->compaction->input(0, 1);
@@ -1014,7 +1036,7 @@ Status DBImpl::DoCompactionWork(CompactionState* compact) {
       //std::cout << "oldtable: " << olddt << " largestkey: " << olddt->table_.largest[0]->key << std::endl;
       //std::cout << "newtable: " << newdt << " smallestkey: " << newdt->table_.smallest->key << std::endl;
       status = olddt->Compact(newdt, compact->smallest_snapshot);
-	  wa += olddt->table_.wa;
+	    wa += olddt->table_.wa;
       //std::cout << "Normal Compaction complete" << std::endl;
 
       out.dt = olddt;
