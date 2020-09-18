@@ -49,7 +49,7 @@ struct LEVELDB_EXPORT Options {
 
   // support two nvm numa nodes currently, default node2, node4
   int nvm_node = 2;
-  int nvm_next_node = 4;
+  int nvm_next_node = -1;
 
   // -------------------
   // Parameters that affect behavior
