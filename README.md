@@ -20,6 +20,7 @@ $ daxctl reconfigure-device --mode=system-ram --no-online daxX.Y
 ### 2. Compilation
 * Build MioDB via cmake
 ```
+$ cd mioDB
 $ mkdir -p build && cd build
 $ cmake -DCMAKE_BUILD_TYPE=Release .. && cmake --build .
 ```
