@@ -1,4 +1,4 @@
-# MioDB: Rethinking Log-structured Merging for Hybrid Memory KV Stores
+# MioDB: Revisiting Log-structured Merging for KV Stores in Hybrid Memory Systems
 &#160; &#160; &#160; &#160; MioDB is a byte-addressable LSM-based KV stores for hybrid memory. MioDB leverages the PMTable which is based on skiplist to replace the traditional persistent storage structure SSTable. Meanwhile, MioDB uses one-piece flush to convert data from DRAM to NVM quickly, zero-copy compaction to merge PMTable rapidly in low level, and lazy-copy compaction in last level to finally delete the redundant data. MioDB also ultilizes an elastic buffer and a full-level parallel to merge concurrently to make data sink quickly. For optimizing read performance, MioDB can increase the number of levels and use bloom filters.
 
 &#160; &#160; &#160; &#160; MioDB is implemented on the base of Google [LevelDB](https://github.com/google/leveldb).
