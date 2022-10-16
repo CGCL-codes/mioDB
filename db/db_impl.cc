@@ -199,9 +199,9 @@ DBImpl::~DBImpl() {
     delete options_.block_cache;
   }
   // add by mio
-  //std::cout << "stall time: " << stall_time_ << std::endl;
-  //std::cout << "dump time:  " << dumptime << std::endl;
-  //std::cout << "wa: " << wa << std::endl;
+  std::cout << "stall time: " << stall_time_ << "us" << std::endl;
+  std::cout << "flush time:  " << dumptime << "us" << std::endl;
+  std::cout << "wa: " << wa << "Bytes" << std::endl;
 }
 
 // add by mio
