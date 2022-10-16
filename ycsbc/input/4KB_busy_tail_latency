@@ -1,0 +1,5 @@
+19
+./ycsbc -db leveldb -dbpath /mnt/persist-memory/pmem_yjb_1 -threads 1 -P workloads/load80G4kb.spec -load true -dboption 1 -dbstatistics true -dbwaitforbalance false -timeseries false
+19
+./ycsbc -db leveldb -dbpath /mnt/persist-memory/pmem_yjb_1 -threads 1 -P workloads/tail.spec -run true -dboption 1 -dbstatistics true -dbwaitforbalance false -timeseries true
+0

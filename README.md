@@ -1,5 +1,7 @@
-# MioDB: Devouring Data Byte-addressable LSM-based KV Stores for Hybrid Memory
-&#160; &#160; &#160; &#160; MioDB is a byte-addressable LSM-based KV stores for hybrid memory. MioDB leverages the datable which is based on skiplist to replace the traditional persistent storage structure SSTable. Meanwhile, MioDB uses one-piece flush to convert data from DRAM to NVM quickly, data-reusable compaction to merge datable rapidly in low level, and deduplicated compaction in last level to finally delete the redundant data. MioDB also ultilizes an elastic buffer and a full-level parallel to merge concurrently to make data sink quickly. For optimizing read performance, MioDB can increase the number of levels and use bloom filters.
+# MioDB: Revisiting Log-structured Merging for KV Stores in Hybrid Memory Systems
+&#160; &#160; &#160; &#160; MioDB is a byte-addressable LSM-based KV stores for hybrid memory. MioDB leverages the PMTable which is based on skiplist to replace the traditional persistent storage structure SSTable. Meanwhile, MioDB uses one-piece flush to convert data from DRAM to NVM quickly, zero-copy compaction to merge PMTable rapidly in low level, and lazy-copy compaction in last level to finally delete the redundant data. MioDB also ultilizes an elastic buffer and a full-level parallel to merge concurrently to make data sink quickly. For optimizing read performance, MioDB can increase the number of levels and use bloom filters.
+
+&#160; &#160; &#160; &#160; MioDB is implemented on the base of Google [LevelDB](https://github.com/google/leveldb).
 
 ## Dependencies, Compilation and Run
 ### 1. External Dependencies
@@ -18,19 +20,16 @@ $ daxctl reconfigure-device --mode=system-ram --no-online daxX.Y
 ```
 
 ### 2. Compilation
-* Modify ``db/skiplist.h`` & ``util/arena.h``
+* Build MioDB via cmake.
 ```
-#define NUMA_NODE your_nvm_node_num
-```
-* Build MioDB via cmake
-```
+$ cd mioDB
 $ mkdir -p build && cd build
 $ cmake -DCMAKE_BUILD_TYPE=Release .. && cmake --build .
 ```
 
 ### 3. Run
 To test with db_bench, please refer to the test script
-``test_sh/miodb_test.sh`` and run this script with command
+``test_sh/miodb_test.sh`` and run this script with command. MioDB has no recovery functionality implemented yet, thus db_bench need re-run fill database for every benchmark.
 ```
 $ sudo ./test_sh/miodb_test.sh
 ```
