@@ -22,11 +22,13 @@ namespace leveldb {
 // Grouping of constants.  We may want to make some of these
 // parameters set via options.
 namespace config {
+// modify by mio
 //static const int kNumLevels = 7;
 static const int kNumLevels = 8;
 
 // Level-0 compaction is started when we hit this many files.
-//static const int kL0_CompactionTrigger = 4; modify by mio
+// modify by mio
+//static const int kL0_CompactionTrigger = 4;
 static const int kL0_CompactionTrigger = 2;
 
 // Soft limit on number of level-0 files.  We slow down writes at this point.
@@ -109,7 +111,7 @@ class InternalKeyComparator : public Comparator {
   explicit InternalKeyComparator(const Comparator* c) : user_comparator_(c) {}
   const char* Name() const override;
   int Compare(const Slice& a, const Slice& b) const override;
-  // add by mio 2020/7/5
+  // add by mio
   int NewCompare(const Slice& akey, const Slice& bkey, bool hasseq, const SequenceNumber snum) const;
   bool NewCompare(const Slice& akey, const Slice& bkey) const;
   void FindShortestSeparator(std::string* start,

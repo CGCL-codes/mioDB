@@ -196,6 +196,7 @@ class LEVELDB_EXPORT Env {
   // added to the same Env may run concurrently in different threads.
   // I.e., the caller may not assume that background work items are
   // serialized.
+  // modify by mio
   virtual void Schedule(void (*function)(void* arg, int level), void* arg, int level) = 0;
 
   // Start a new thread, invoking "function(arg)" within the new thread.
@@ -382,6 +383,7 @@ class LEVELDB_EXPORT EnvWrapper : public Env {
     return target_->LockFile(f, l);
   }
   Status UnlockFile(FileLock* l) override { return target_->UnlockFile(l); }
+  // modify by mio
   void Schedule(void (*f)(void*, int), void* a, int l) override {
     return target_->Schedule(f, a, l);
   }

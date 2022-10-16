@@ -42,10 +42,8 @@ class WritableFile;
 // Return the smallest index i such that files[i]->largest >= key.
 // Return files.size() if there is no such file.
 // REQUIRES: "files" contains a sorted list of non-overlapping files.
-// delete by mio 2020/6/22
-/*
 int FindFile(const InternalKeyComparator& icmp,
-             const std::vector<FileMetaData*>& files, const Slice& key);*/
+             const std::vector<FileMetaData*>& files, const Slice& key);
 
 // Returns true iff some file in "files" overlaps the user key range
 // [*smallest,*largest].
@@ -137,8 +135,7 @@ class Version {
 
   ~Version();
 
-  /* delete by mio 2020/7/15
-  Iterator* NewConcatenatingIterator(const ReadOptions&, int level) const;*/
+  Iterator* NewConcatenatingIterator(const ReadOptions&, int level) const;
 
   // Call func(arg, level, f) for every file that overlaps user_key in
   // order from newest to oldest.  If an invocation of func returns
@@ -155,7 +152,6 @@ class Version {
 
   // List of files per level
   std::vector<FileMetaData*> files_[config::kNumLevels];
-  double level_score_[config::kNumLevels];
 
   // Next file to compact based on seek stats.
   FileMetaData* file_to_compact_;
@@ -170,9 +166,8 @@ class Version {
 
 class VersionSet {
  public:
-  // modify by mio
   VersionSet(const std::string& dbname, const Options* options,
-             /*TableCache* table_cache,*/ const InternalKeyComparator*);
+             TableCache* table_cache, const InternalKeyComparator*);
   VersionSet(const VersionSet&) = delete;
   VersionSet& operator=(const VersionSet&) = delete;
 
@@ -236,7 +231,7 @@ class VersionSet {
   // Returns nullptr if there is no compaction to be done.
   // Otherwise returns a pointer to a heap-allocated object that
   // describes the compaction.  Caller should delete the result.
-  Compaction* PickCompaction(int arrivallevel);
+  Compaction* PickCompaction();
 
   // Return a compaction object for compacting the range [begin,end] in
   // the specified level.  Returns nullptr if there is nothing in that
@@ -251,14 +246,12 @@ class VersionSet {
 
   // Create an iterator that reads over the compaction inputs for "*c".
   // The caller should delete the iterator when no longer needed.
-  /* delete by mio 2020/7/15
-  Iterator* MakeInputIterator(Compaction* c);*/
+  Iterator* MakeInputIterator(Compaction* c);
 
   // Returns true iff some level needs a compaction.
-  bool NeedsCompaction(int arrivallevel) const {
-    assert(arrivallevel > 0 && arrivallevel < config::kNumLevels);
+  bool NeedsCompaction() const {
     Version* v = current_;
-    return (v->level_score_[arrivallevel - 1] >= 1)/* || (v->file_to_compact_ != nullptr)*/;
+    return (v->compaction_score_ >= 1) || (v->file_to_compact_ != nullptr);
   }
 
   // Add all files listed in any live version to *live.
@@ -303,8 +296,7 @@ class VersionSet {
   Env* const env_;
   const std::string dbname_;
   const Options* const options_;
-  /* delete by mio 2020/6/30
-  TableCache* const table_cache_;*/
+  TableCache* const table_cache_;
   const InternalKeyComparator icmp_;
   uint64_t next_file_number_;
   uint64_t manifest_file_number_;

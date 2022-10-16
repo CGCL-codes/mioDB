@@ -30,12 +30,10 @@ class FindFileTest : public testing::Test {
     files_.push_back(f);
   }
 
-  // modify by mio 2020/7/19
   int Find(const char* key) {
-    //InternalKey target(key, 100, kTypeValue);
-    //InternalKeyComparator cmp(BytewiseComparator());
-    //return FindFile(cmp, files_, target.Encode());
-    return 0;
+    InternalKey target(key, 100, kTypeValue);
+    InternalKeyComparator cmp(BytewiseComparator());
+    return FindFile(cmp, files_, target.Encode());
   }
 
   bool Overlaps(const char* smallest, const char* largest) {

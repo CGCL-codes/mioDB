@@ -2259,8 +2259,7 @@ void BM_LogAndApply(int iters, int num_base_files) {
 
   InternalKeyComparator cmp(BytewiseComparator());
   Options options;
-  // modify by mio 2020/7/19
-  VersionSet vset(dbname, &options, /*nullptr,*/ &cmp);
+  VersionSet vset(dbname, &options, nullptr, &cmp);
   bool save_manifest;
   ASSERT_LEVELDB_OK(vset.Recover(&save_manifest));
   VersionEdit vbase;
@@ -2268,8 +2267,7 @@ void BM_LogAndApply(int iters, int num_base_files) {
   for (int i = 0; i < num_base_files; i++) {
     InternalKey start(MakeKey(2 * fnum), 1, kTypeValue);
     InternalKey limit(MakeKey(2 * fnum + 1), 1, kTypeDeletion);
-    // modify by mio 2020/7/19
-    vbase.AddFile(2, fnum++, 1 /* file size */, start, limit, nullptr);
+    vbase.AddFile(2, fnum++, 1 /* file size */, start, limit);
   }
   ASSERT_LEVELDB_OK(vset.LogAndApply(&vbase, &mu));
 
@@ -2277,13 +2275,10 @@ void BM_LogAndApply(int iters, int num_base_files) {
 
   for (int i = 0; i < iters; i++) {
     VersionEdit vedit;
-    // modify by mio 2020/7/19
-    //vedit.RemoveFile(2, fnum);
-    vedit.RemoveFile(2, nullptr);
+    vedit.RemoveFile(2, fnum);
     InternalKey start(MakeKey(2 * fnum), 1, kTypeValue);
     InternalKey limit(MakeKey(2 * fnum + 1), 1, kTypeDeletion);
-    // modify by mio 2020/7/19
-    vedit.AddFile(2, fnum++, 1 /* file size */, start, limit, nullptr);
+    vedit.AddFile(2, fnum++, 1 /* file size */, start, limit);
     vset.LogAndApply(&vedit, &mu);
   }
   uint64_t stop_micros = env->NowMicros();

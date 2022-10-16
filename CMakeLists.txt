@@ -139,11 +139,13 @@ target_sources(leveldb
     "db/log_writer.h"
     "db/memtable.cc"
     "db/memtable.h"
-# add by mio
-    "db/datatable.cc"
-    "db/datatable.h"
-    "db/global.h"
+    # add by mio
+    "db/elastic_buffer.cc"
+    "db/elastic_buffer.h"
+    "db/pmtable.cc"
+    "db/pmtable.h"
     "db/global.cc"
+    "db/global.h"
     "db/repair.cc"
     "db/skiplist.h"
     "db/snapshot.h"
@@ -174,7 +176,7 @@ target_sources(leveldb
     "table/table.cc"
     "table/two_level_iterator.cc"
     "table/two_level_iterator.h"
-# add by mio
+    # add by mio
     "util/mergeablebloom.cc"
     "util/mergeablebloom.h"
     "util/arena.cc"
@@ -284,8 +286,8 @@ endif(HAVE_SNAPPY)
 if(HAVE_TCMALLOC)
   target_link_libraries(leveldb tcmalloc)
 endif(HAVE_TCMALLOC)
-# Add by miodb
-target_link_libraries(leveldb -lnuma)
+# add by mio
+  target_link_libraries(leveldb -lnuma)
 
 # Needed by port_stdcxx.h
 find_package(Threads REQUIRED)
@@ -350,7 +352,7 @@ if(LEVELDB_BUILD_TESTS)
   leveldb_test("issues/issue200_test.cc")
   leveldb_test("issues/issue320_test.cc")
 
-  #delete by mio
+  # delete by mio
   #leveldb_test("util/env_test.cc")
   leveldb_test("util/status_test.cc")
   leveldb_test("util/no_destructor_test.cc")
@@ -363,7 +365,7 @@ if(LEVELDB_BUILD_TESTS)
     leveldb_test("db/filename_test.cc")
     leveldb_test("db/log_test.cc")
     leveldb_test("db/recovery_test.cc")
-    #delete by mio
+    # delete by mio
     #leveldb_test("db/skiplist_test.cc")
     #leveldb_test("db/version_edit_test.cc")
     #leveldb_test("db/version_set_test.cc")

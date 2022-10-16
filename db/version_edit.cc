@@ -69,8 +69,7 @@ void VersionEdit::EncodeTo(std::string* dst) const {
   for (const auto& deleted_file_kvp : deleted_files_) {
     PutVarint32(dst, kDeletedFile);
     PutVarint32(dst, deleted_file_kvp.first);   // level
-    // modify by mio
-    PutVarint64(dst, (uint64_t)deleted_file_kvp.second);  // file number -> DataTable pointer
+    PutVarint64(dst, deleted_file_kvp.second);  // file number
   }
 
   for (size_t i = 0; i < new_files_.size(); i++) {
@@ -81,8 +80,6 @@ void VersionEdit::EncodeTo(std::string* dst) const {
     PutVarint64(dst, f.file_size);
     PutLengthPrefixedSlice(dst, f.smallest.Encode());
     PutLengthPrefixedSlice(dst, f.largest.Encode());
-    // add by mio
-    PutVarint64(dst, (uint64_t)f.dt);
   }
 }
 
@@ -117,8 +114,6 @@ Status VersionEdit::DecodeFrom(const Slice& src) {
   FileMetaData f;
   Slice str;
   InternalKey key;
-  // add by mio
-  uint64_t tmp;
 
   while (msg == nullptr && GetVarint32(&input, &tag)) {
     switch (tag) {
@@ -172,9 +167,8 @@ Status VersionEdit::DecodeFrom(const Slice& src) {
         break;
 
       case kDeletedFile:
-        // modify by mio
-        if (GetLevel(&input, &level) && GetVarint64(&input, &tmp)) {
-          deleted_files_.insert(std::make_pair(level, (DataTable*)tmp));
+        if (GetLevel(&input, &level) && GetVarint64(&input, &number)) {
+          deleted_files_.insert(std::make_pair(level, number));
         } else {
           msg = "deleted file";
         }
@@ -184,9 +178,7 @@ Status VersionEdit::DecodeFrom(const Slice& src) {
         if (GetLevel(&input, &level) && GetVarint64(&input, &f.number) &&
             GetVarint64(&input, &f.file_size) &&
             GetInternalKey(&input, &f.smallest) &&
-            GetInternalKey(&input, &f.largest) &&
-            GetVarint64(&input, &tmp)) {
-          f.dt = (DataTable*)tmp;
+            GetInternalKey(&input, &f.largest)) {
           new_files_.push_back(std::make_pair(level, f));
         } else {
           msg = "new-file entry";
@@ -242,9 +234,8 @@ std::string VersionEdit::DebugString() const {
   for (const auto& deleted_files_kvp : deleted_files_) {
     r.append("\n  RemoveFile: ");
     AppendNumberTo(&r, deleted_files_kvp.first);
-    // modify by mio
-    r.append("addr: ");
-    AppendNumberTo(&r, (uint64_t)deleted_files_kvp.second);
+    r.append(" ");
+    AppendNumberTo(&r, deleted_files_kvp.second);
   }
   for (size_t i = 0; i < new_files_.size(); i++) {
     const FileMetaData& f = new_files_[i].second;
@@ -258,9 +249,6 @@ std::string VersionEdit::DebugString() const {
     r.append(f.smallest.DebugString());
     r.append(" .. ");
     r.append(f.largest.DebugString());
-    // add by mio
-    r.append("addr: ");
-    AppendNumberTo(&r, (uint64_t)f.dt);
   }
   r.append("\n}\n");
   return r;

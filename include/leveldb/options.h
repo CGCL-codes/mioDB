@@ -35,21 +35,21 @@ struct LEVELDB_EXPORT Options {
   Options();
   // -------------------
   // Parameters added by mio
-  // if true, DataTable will use bloom filter
-  bool use_datatable_bloom = true;
+  // if true, PmTable will use bloom filter
+  bool use_pmtable_bloom = true;
 
   // bloom filter bits per key. 99%
   size_t bits_per_key = 16;
 
-  // keys in datatable in the highest level which sets bloom filter
-  int keys_per_datatable = 2097152;
+  // keys in pmtable in the highest level which sets bloom filter
+  int keys_per_pmtable = 2097152;
 
   // dram node in numa, default node0
   int dram_node = 0;
 
   // support two nvm numa nodes currently, default node2, node4
   int nvm_node = 2;
-  int nvm_next_node = 4;
+  int nvm_next_node = -1;
 
   // -------------------
   // Parameters that affect behavior
@@ -129,7 +129,7 @@ struct LEVELDB_EXPORT Options {
   // compactions and hence longer latency/performance hiccups.
   // Another reason to increase this parameter might be when you are
   // initially populating a large database.
-  size_t max_file_size = 2 * 1024 * 1024;
+  size_t max_file_size = 64 * 1024 * 1024;
 
   // Compress blocks using the specified compression algorithm.  This
   // parameter can be changed dynamically.
