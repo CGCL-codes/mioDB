@@ -6,6 +6,11 @@ int nvm_node = 2;
 int nvm_next_node = 4;
 size_t nvm_free_space = 384L * 1024 * 1024 * 1024;
 bool nvm_node_has_changed = false;
+size_t nvm_actual_use = 0L;
+size_t nvm_use_max = 0L;
+std::ofstream ofs;
+long long nvm_total = 0L;
+long long ops_num = 0L;
 
 // init nvm_free_space
 void NvmNodeSizeInit(const Options& options_) {
@@ -19,6 +24,10 @@ void NvmNodeSizeInit(const Options& options_) {
 
 // we do not consider the released memory in beta version
 void NvmNodeSizeRecord(size_t s) {
+    nvm_actual_use += s;
+    if (nvm_use_max < nvm_actual_use) {
+        nvm_use_max = nvm_actual_use;
+    }
     if (nvm_node_has_changed || nvm_next_node == -1) {
         return;
     }
@@ -29,4 +38,31 @@ void NvmNodeSizeRecord(size_t s) {
     } else {
         nvm_free_space -= tmp;
     }
+}
+
+void NvmFreeRecord(size_t s) {
+    nvm_actual_use -= s;
+}
+
+void NvmUsagePrint() {
+    std::cout << "Final Use NVM: " << 1.0 * nvm_actual_use / 1024 / 1024 / 1024 << " GB" << std::endl;
+    std::cout << "Max Use NVM: " << 1.0 * nvm_use_max / 1024 / 1024 / 1024 << " GB" << std::endl;
+    std::cout << "Average Use NVM: " << 1.0 * nvm_total / 1024 / 1024 / 1024 / ops_num << " GB" << std::endl;
+}
+
+void OpenRecordFile() {
+    ofs.open("./nvm_record.txt");
+    if (!ofs.is_open()) {
+        std::cout << "Open file error!" << std::endl;
+    }
+}
+
+void CloseRecordFile() {
+    ofs.close();
+}
+
+void RecordNvmSeries() {
+    // ofs << nvm_actual_use << std::endl;
+    nvm_total += nvm_actual_use;
+    ops_num++;
 }

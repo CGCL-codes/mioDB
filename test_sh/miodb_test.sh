@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # save .log LOG CURRENT MANIFEST...
-db_path="/mnt/persist-memory/pmem_yjb_1/dbbench"
+db_path="/home/jbyao/db_file"
 # output file dir
 outfilepath="/home/jbyao/miodb/test"
 # output file

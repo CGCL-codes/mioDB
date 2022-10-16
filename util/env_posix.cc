@@ -660,6 +660,7 @@ class PosixEnv : public Env {
     return Status::OK();
   }
 
+  // modify by mio
   void Schedule(void (*background_work_function)(void* background_work_arg, int level),
                 void* background_work_arg, int level) override;
 
@@ -717,8 +718,10 @@ class PosixEnv : public Env {
   }
 
  private:
+  // modify by mio
   void BackgroundThreadMain(int level);
 
+  // modify by mio
   static void BackgroundThreadEntryPoint(PosixEnv* env, int level) {
     env->BackgroundThreadMain(level);
   }
@@ -729,6 +732,7 @@ class PosixEnv : public Env {
   // background thread.
   //
   // This structure is thread-safe beacuse it is immutable.
+  // modify by mio
   struct BackgroundWorkItem {
     explicit BackgroundWorkItem(void (*function)(void* arg, int level), void* arg, int level)
         : function(function), arg(arg), level(level) {}
@@ -740,9 +744,11 @@ class PosixEnv : public Env {
 
   port::Mutex background_work_mutex_;
   port::CondVar background_work_cv_ GUARDED_BY(background_work_mutex_);
-  bool started_background_thread_[config::kNumLevels] GUARDED_BY(background_work_mutex_);
+  // modify by mio
+  bool started_background_thread_[config::kNumLevels + 1] GUARDED_BY(background_work_mutex_);
 
-  std::queue<BackgroundWorkItem> background_work_queue_[config::kNumLevels]
+  // modify by mio
+  std::queue<BackgroundWorkItem> background_work_queue_[config::kNumLevels + 1]
       GUARDED_BY(background_work_mutex_);
 
   PosixLockTable locks_;  // Thread-safe.
@@ -773,17 +779,18 @@ int MaxOpenFiles() {
 
 }  // namespace
 
+// modify by mio
 PosixEnv::PosixEnv()
     : background_work_cv_(&background_work_mutex_),
-      //started_background_thread_(false),
+      // started_background_thread_(false),
       mmap_limiter_(MaxMmaps()),
       fd_limiter_(MaxOpenFiles()) {
-  
-  for (int i = 0; i < config::kNumLevels; i++) {
+  for (int i = 0; i < config::kNumLevels + 1; i++) {
     started_background_thread_[i] = false;
   }
 }
 
+// modify by mio
 void PosixEnv::Schedule(
     void (*background_work_function)(void* background_work_arg, int level),
     void* background_work_arg, int level) {
@@ -805,6 +812,7 @@ void PosixEnv::Schedule(
   background_work_mutex_.Unlock();
 }
 
+// modify by mio
 void PosixEnv::BackgroundThreadMain(int level) {
   while (true) {
     background_work_mutex_.Lock();

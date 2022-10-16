@@ -12,7 +12,6 @@
 #include "leveldb/iterator.h"
 #include "leveldb/options.h"
 
-#define MIODB
 namespace leveldb {
 
 // Update CMakeLists.txt if you change these
@@ -48,7 +47,6 @@ class LEVELDB_EXPORT DB {
  public:
   // add by mio
   virtual bool HaveBalancedDistribution() = 0;
-
   // Open the database with the specified "name".
   // Stores a pointer to a heap-allocated database in *dbptr and returns
   // OK on success.

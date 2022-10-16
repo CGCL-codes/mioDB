@@ -10,29 +10,24 @@
 #include <vector>
 
 #include "db/dbformat.h"
-#include "db/datatable.h"
 
 namespace leveldb {
 
 class VersionSet;
 
 struct FileMetaData {
-  FileMetaData() : refs(0), allowed_seeks(1 << 30), file_size(0), mustquery(false), dt(nullptr) {}
+  FileMetaData() : refs(0), allowed_seeks(1 << 30), file_size(0) {}
+
   int refs;
   int allowed_seeks;  // Seeks allowed until compaction
   uint64_t number;
   uint64_t file_size;    // File size in bytes
   InternalKey smallest;  // Smallest internal key served by table
   InternalKey largest;   // Largest internal key served by table
-  bool mustquery;
-
-  // add by mio 2020/6/17
-  DataTable* dt;
 };
 
 class VersionEdit {
  public:
-  // modify by mio
   VersionEdit() { Clear(); }
   ~VersionEdit() = default;
 
@@ -65,23 +60,18 @@ class VersionEdit {
   // Add the specified file at the specified number.
   // REQUIRES: This version has not been saved (see VersionSet::SaveTo)
   // REQUIRES: "smallest" and "largest" are smallest and largest keys in file
-  // modify by mio 2020/6/17
   void AddFile(int level, uint64_t file, uint64_t file_size,
-               const InternalKey& smallest, const InternalKey& largest, DataTable* addtable) {
+               const InternalKey& smallest, const InternalKey& largest) {
     FileMetaData f;
     f.number = file;
     f.file_size = file_size;
     f.smallest = smallest;
     f.largest = largest;
-    f.dt = addtable;
-    f.mustquery = false;
     new_files_.push_back(std::make_pair(level, f));
   }
 
   // Delete the specified "file" from the specified "level".
-  // modify by mio
-  //void RemoveFile(int level, uint64_t file) {
-  void RemoveFile(int level, DataTable* file) {
+  void RemoveFile(int level, uint64_t file) {
     deleted_files_.insert(std::make_pair(level, file));
   }
 
@@ -93,15 +83,12 @@ class VersionEdit {
  private:
   friend class VersionSet;
 
-  // modify by mio 2020/6/18
-  //typedef std::set<std::pair<int, uint64_t>> DeletedFileSet;
-  typedef std::set<std::pair<int, DataTable*>> DeletedFileSet;
+  typedef std::set<std::pair<int, uint64_t>> DeletedFileSet;
 
   std::string comparator_;
   uint64_t log_number_;
   uint64_t prev_log_number_;
   uint64_t next_file_number_;
-
   SequenceNumber last_sequence_;
   bool has_comparator_;
   bool has_log_number_;

@@ -1,5 +1,5 @@
 // Add by MioDB
-// Mergeable bloom filters can accelerate datatables' query requests
+// Mergeable bloom filters can accelerate pmtables' query requests
 
 #include <string>
 #include <vector>

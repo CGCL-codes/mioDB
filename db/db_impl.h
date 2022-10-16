@@ -12,13 +12,12 @@
 
 #include "db/dbformat.h"
 #include "db/log_writer.h"
-// add by mio 
-#include "db/datatable.h"
 #include "db/snapshot.h"
 #include "leveldb/db.h"
 #include "leveldb/env.h"
 #include "port/port.h"
 #include "port/thread_annotations.h"
+#include "elastic_buffer.h"
 
 namespace leveldb {
 
@@ -80,10 +79,6 @@ class DBImpl : public DB {
   friend class DB;
   struct CompactionState;
   struct Writer;
-  // add by mio
-  uint64_t stall_time_;
-  uint64_t dumptime;
-  size_t wa;
 
   // Information for a manual compaction
   struct ManualCompaction {
@@ -132,11 +127,21 @@ class DBImpl : public DB {
   // Errors are recorded in bg_error_.
   void CompactMemTable() EXCLUSIVE_LOCKS_REQUIRED(mutex_);
 
+  // add by mio
+  void CompactPmTable() EXCLUSIVE_LOCKS_REQUIRED(mutex_);
+
   Status RecoverLogFile(uint64_t log_number, bool last_log, bool* save_manifest,
                         VersionEdit* edit, SequenceNumber* max_sequence)
       EXCLUSIVE_LOCKS_REQUIRED(mutex_);
 
-  Status WriteLevel0Table(MemTable* mem, VersionEdit* edit)
+  // modify by mio
+  /*Status WriteLevel0Table(MemTable* mem, VersionEdit* edit, Version* base)
+      EXCLUSIVE_LOCKS_REQUIRED(mutex_);*/
+  
+  Status WriteLevel0PmTable(MemTable* mem)
+      EXCLUSIVE_LOCKS_REQUIRED(mutex_);
+
+  Status WriteLevel0SsTable(PmTable* mem, VersionEdit* edit, Version* base)
       EXCLUSIVE_LOCKS_REQUIRED(mutex_);
 
   Status MakeRoomForWrite(bool force /* compact even if there is room? */)
@@ -146,10 +151,12 @@ class DBImpl : public DB {
 
   void RecordBackgroundError(const Status& s);
 
+  // modify by mio
   void MaybeScheduleCompaction(int level) EXCLUSIVE_LOCKS_REQUIRED(mutex_);
   static void BGWork(void* db, int level);
   void BackgroundCall(int level);
   void BackgroundCompaction(int level) EXCLUSIVE_LOCKS_REQUIRED(mutex_);
+  // end
   void CleanupCompaction(CompactionState* compact)
       EXCLUSIVE_LOCKS_REQUIRED(mutex_);
   Status DoCompactionWork(CompactionState* compact)
@@ -168,15 +175,13 @@ class DBImpl : public DB {
   Env* const env_;
   const InternalKeyComparator internal_comparator_;
   const InternalFilterPolicy internal_filter_policy_;
-
   const Options options_;  // options_.comparator == &internal_comparator_
   const bool owns_info_log_;
   const bool owns_cache_;
   const std::string dbname_;
 
   // table_cache_ provides its own synchronization
-  /* delete by mio 2020/7/18
-  TableCache* const table_cache_;*/
+  TableCache* const table_cache_;
 
   // Lock over the persistent DB state.  Non-null iff successfully acquired.
   FileLock* db_lock_;
@@ -204,7 +209,8 @@ class DBImpl : public DB {
   std::set<uint64_t> pending_outputs_ GUARDED_BY(mutex_);
 
   // Has a background compaction been scheduled or is running?
-  bool background_compaction_scheduled_[config::kNumLevels] GUARDED_BY(mutex_);
+  // modify by mio
+  bool background_compaction_scheduled_[config::kNumLevels + 1] GUARDED_BY(mutex_);
 
   ManualCompaction* manual_compaction_ GUARDED_BY(mutex_);
 
@@ -214,6 +220,10 @@ class DBImpl : public DB {
   Status bg_error_ GUARDED_BY(mutex_);
 
   CompactionStats stats_[config::kNumLevels] GUARDED_BY(mutex_);
+
+  // add by mio
+  ElasticBuffer* eb_ GUARDED_BY(mutex_);
+  uint64_t flush_time;
 };
 
 // Sanitize db options.  The caller should delete result.info_log if
