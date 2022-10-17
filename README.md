@@ -40,8 +40,8 @@ Then the static library of MioDB and the executable db_bench program will be gen
 We can build YCSB via Makefile. Before compiling, we need to set some environment variables. We can modify and use ycsbc/ycsb_build_env.sh to set these.
 
 ```
-    CPLUS_INCLUDE_PATH=the absolute path of *MioDB/include*
-    LIBRARY_PATH=the absolute path of *MioDB/build*
+    CPLUS_INCLUDE_PATH=the absolute path of MioDB/include
+    LIBRARY_PATH=the absolute path of MioDB/build
 ```
     
 Meanwhile, we need modify some source code in *db/leveldb_db.cc*. We should set the *options->nvm_node* (line 34) to the numa node of NVM (using ''numactl -H'' in terminal to distinguish DRAM and NVM node). The command to compile the YCSB:
