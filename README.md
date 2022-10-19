@@ -3,7 +3,7 @@
 
 &#160; &#160; &#160; &#160; MioDB is implemented on the base of Google [LevelDB](https://github.com/google/leveldb).
 
-## Dependencies, Compilation and Run
+## Dependencies, Compilation and Running
 ### 1. External Dependencies
 #### Hardware Dependencies
 Our experiments use a server with hardware dependencies shown below.
@@ -50,13 +50,13 @@ Meanwhile, we need modify some source code in *db/leveldb_db.cc*. We should set 
     [MioDB/YCSB] make
 ```
 
-### 3. Running, and Performance Test
+### 3. Running, and Performance Testing
 
-MioDB can be performed db_bench and YCSB as micro-benchmark and macro-benchmark to evaluate the performance. Since MioDB has no recovery functionality implemented yet, thus benchmark need re-run fill database for every benchmark.
+MioDB can be performed db_bench and YCSB as micro-benchmark and macro-benchmark to evaluate the performance. Since MioDB does not support checkpointing, we have to re-run each benchmark to fill the database for each test.
 
 #### Micro-benchmark
 
-For running db_bench, we can refer to the script *miodb_test.sh* under *test_sh/*. The options in the script:
+For running db_bench, we can refer to the script *miodb_test.sh* under *test_sh/*. The options are listed in the script:
 
 ```
     [db_path]: save LOG, CURRENT, MANIFEST, and etc.
@@ -76,21 +76,30 @@ For running db_bench, we can refer to the script *miodb_test.sh* under *test_sh/
     [write_buffer_size]: the size of MemTable in DRAM (Byte).
 ```
 
-Before running, we need to modify this script. First, we should modify the *db_path* to the path of NVM (the Optane DC PMMs can be mounted using command like *mount /dev/pmem0/your/path*). Then, specify the path of the output file directory and output file by *outfilepath* and *outfile*. Third, we set the path of db_bench binary path using *bench_path*. Finally, we modify the numa_dram_node and numa_nvm_node to the DRAM and NVM node, respectively. (using ''numactl -H'' in terminal to distinguish DRAM and NVM node). We can use the command below to run the YCSB test:
+Before running, we need to modify this script. First, we should modify the *db_path* to the path of NVM (the Optane DC PMMs can be mounted using command like *mount /dev/pmem0/your/path*). Then, we should specify the path of the output directory and output file by *outfilepath* and *outfile*. Third, we set the path of db_bench using *bench_path*. Finally, we modify the numa_dram_node and numa_nvm_node to the DRAM and NVM node, respectively (using ''numactl -H'' in terminal to distinguish DRAM and NVM node). We can use the command below to run the db_bench test:
 
 ```
     [MioDB] sh miodb_test.sh
 ```
-    
-After the db_bench runs, the throughput and latency will output in the *outfilepath*. MioDB uses db_bench to evaluate performance with value change in size and compare the throughput and latency with NoveLSM, MatrixKV, and etc.
 
-For evaluating the performance of db_bench (Figure 6 and Table 1 in the paper), we can modify the size of value by *size* in the script, for example *size=''4096''*. We can freely combine four kinds of test type (''fillrandom'', ''fillseq'', ''readrandom'', ''readseq'') for *test_type*, for example *test_type=''fillrandom,stats,readrandom,stats''*. Please make sure the write type is before the read type. The ''stats'' can print some DB status data. The cumulative stalls time, flushing time and write amplification will print in the terminal finally. We can use the function *RUN_ONE_TEST* to run db_bench once. The function *RUN_VALUE_TEST* can run multi db_bench with different value size in sequence. Before using *RUN_VALUE_TEST*, please set the *value_array* like *value_array=(1024 4096 16384 65536)*
+After the db_bench finishes, the throughput and latency results are recorded in the *outfilepath*. We use db_bench to evaluate the performance with different value sizes and compare the throughput and latency of MioDB with that of NoveLSM and MatrixKV.
+
+For evaluating the performance of db_bench (Figure 6 and Table 1 in the paper), we can modify the size of value by *size* in the script, for example, *size=''4096''*. We can freely combine four kinds of test types (''fillrandom'', ''fillseq'', ''readrandom'', ''readseq'') to configure the *test_type*, for example:
+
+```
+     test_type=''fillrandom,stats,readrandom,stats''
+```
+Please make sure the write type is before the read type. The ''stats'' can print some DB status data. The cumulative stalls time, flushing time and write amplification ratio will be printed in the terminal finally. 
+
+We can use the function *RUN_ONE_TEST* to run all db_bench tests. The function *RUN_VALUE_TEST* can run multi db_bench with different value sizes in sequence. Before using *RUN_VALUE_TEST*, please set the *value_array* at first, for example,  *value_array=(1024 4096 16384 65536)*.
+
+
 
 
 
 #### Macro-benchmark
 
-For running YCSB, we can refer to the files under *input/*. The options in the file:
+For running YCSB, we can refer to the files under *input/*. The options are listed in the file:
 
 ```
     [-db]: MioDB uses "leveldb".
@@ -104,7 +113,7 @@ For running YCSB, we can refer to the files under *input/*. The options in the f
     [-timeseries]: whether to print time series.
 ```
 
-We can set the workload options in the workload file. The options in the file:
+We can set the workload options in the workload file. The options are listed in the file:
 
 ```
     [fieldcount]: the number of values.
@@ -119,21 +128,21 @@ We can set the workload options in the workload file. The options in the file:
     [requestdistribution]: the destribution of the workload.
 ```
 
-Before running, we need to modify the files under  *input/*. First, We set the *-dbpath* to the path of NVM. Then, we set *-P* to specify the workload file and choose load mode or run mode. We can use the command below to run the YCSB test:
+Before running, we need to modify the files under *input/*. First, We set the *-dbpath* to the path of NVM. Then, we set *-P* to specify the workload file and choose the load mode or the run mode. We can use the command below to run the YCSB test:
 
 ```
     [MioDB/YCSB] ./ycsbc input/select_a_file
 ```
     
-After the YCSB runs, it will output the throughput. MioDB uses YCSB to evaluate the tail latency and compare with NoveLSM, MatrixKV.
+After the YCSB finishes, it will output the throughput. MioDB uses YCSB to evaluate the tail latency and compare with NoveLSM, MatrixKV.
 
-For evaluating the performance of YCSB (Figure 7 in the paper), we can modify the *-P* to the workload load and A-F under the workloads/ directory (Note the distinction between 1KB and 4KB value size). For evaluating the tail latency of YCSB (Figure 8 and Table 2 in the paper), please use the ``tail.spec'' as the workload in run mode.
+For evaluating the performance of YCSB (Figure 7 in the paper), we can modify the *-P* to the workload load and A-F under the workloads/ directory (Note the distinction between 1KB and 4KB value size). For evaluating the tail latency of YCSB (Figure 8 and Table 2 in the paper), please use the ''tail.spec'' as the workload in the run mode.
 
 #### Sensitivity Studies
 
-For the sensitivity studies of levels (Figure 9 in the paper), we need recompile MioDB. The parameter which controls the level numbers of MioDB is in the file *db/dbformat.h*. The name is *kNumLevels* (line 26). We can modify it and then rebuild the hole program. The method of evaluating random write and random read performance is same as Micro-benchmark.
+For the sensitivity studies of levels (Figure 9 in the paper), we need recompile MioDB. The parameter which controls the level numbers of MioDB is in the file *db/dbformat.h*. The name is *kNumLevels* (line 26). We can modify it and then rebuild the whole program. The method of evaluating the random write and random read performance is same as the above Micro-benchmark.
 
-For the sensitivity studies of the size of dataset (Figure 10 and Figure 11 in the paper), we also use the *miodb_test.sh*. We can modify the *write_key_num* to control the size of dataset. The total size can calculate by *write_key_num* * *size*. Because the size of key is very small compared to the value, we can just ignore the size of key.
+For the sensitivity studies of the size of dataset (Figure 10 and Figure 11 in the paper), we also use the *miodb\_test.sh*. We can modify the *write_key_num* to configure the size of dataset. The total size can be calculated by *write_key_num* * *size*. Because the size of key is very small compared to the value, we can ignore the size of key.
 
 #### SSD-Supported MioDB Extension
-We have implemented a simple demo of SSD-Supported MioDB. We can download the code from the github repository of MioDB on ''ssd_extension'' branch. The compilation and evaluation method is same as the in-memory MioDB. The only difference between them is the *db_path* in db_bench and the *-dbpath* in YCSB. We need set these two parameters to a path of SSD.
+We have implemented SSD-Supported MioDB. We can download the code from the github repository of MioDB on ''ssd_extension'' branch. The compilation and evaluation method is same as the in-memory MioDB. The only difference between them is the *db_path* in db_bench and the *-dbpath* in YCSB. We need set these two parameters to a data path of SSD.
