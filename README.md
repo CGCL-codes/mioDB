@@ -37,14 +37,30 @@ For running MioDB, the entire project needs to be compiled. We can build MioDB v
     
 Then the static library of MioDB and the executable db_bench program will be generated in the build/ folder.
 
-We can build YCSB via Makefile. Before compiling, we need to set some environment variables. We can modify and use ycsbc/ycsb_build_env.sh to set these.
+We can build YCSB via Makefile. Before compiling, we need to set some environment variables. We can modify and use *ycsbc/ycsb_build_env.sh* to set these.
 
 ```
+    // modify the script
     CPLUS_INCLUDE_PATH=the absolute path of MioDB/include
     LIBRARY_PATH=the absolute path of MioDB/build
+    // execute the command
+    [user@node ~] source ycsbc/ycsb_build_env.sh
+```
+
+Of course, we can also directly execute the commands below in the terminal to set the environment variables before every complation. Assume the absolute path of MioDB is */home/user/mioDB*.
+
+```
+[user@node ~] export LIBRARY_PATH=/home/user/mioDB/build
+[user@node ~] export CPLUS_INCLUDE_PATH=/home/user/mioDB/include
+```
+
+Use `env` command to check the environment variables.
+
+```
+[user@node ~] env
 ```
     
-Meanwhile, we need modify some source code in *db/leveldb_db.cc*. We should set the *options->nvm_node* (line 34) to the numa node of NVM (using ''numactl -H'' in terminal to distinguish DRAM and NVM node). The command to compile the YCSB:
+Meanwhile, we need modify some source code in *ycsbc/db/leveldb_db.cc*. We should set the *options->nvm_node* (line 34) to the numa node of NVM (using ''numactl -H'' in terminal to distinguish DRAM and NVM node). The command to compile the YCSB:
 
 ```
     [MioDB/YCSB] make
@@ -79,7 +95,10 @@ For running db_bench, we can refer to the script *miodb_test.sh* under *test_sh/
 Before running, we need to modify this script. First, we should modify the *db_path* to the path of NVM (the Optane DC PMMs can be mounted using command like *mount /dev/pmem0/your/path*). Then, we should specify the path of the output directory and output file by *outfilepath* and *outfile*. Third, we set the path of db_bench using *bench_path*. Finally, we modify the numa_dram_node and numa_nvm_node to the DRAM and NVM node, respectively (using ''numactl -H'' in terminal to distinguish DRAM and NVM node). We can use the command below to run the db_bench test:
 
 ```
-    [MioDB] sh miodb_test.sh
+    [MioDB] sudo sh miodb_test.sh
+    // Another way to run this script 
+    [MioDB] sudo chmod 775 miodb_test.sh
+    [MioDB] sudo ./miodb_test.sh
 ```
 
 After the db_bench finishes, the throughput and latency results are recorded in the *outfilepath*. We use db_bench to evaluate the performance with different value sizes and compare the throughput and latency of MioDB with that of NoveLSM and MatrixKV.
