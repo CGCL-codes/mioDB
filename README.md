@@ -114,7 +114,25 @@ We can use the function *RUN_ONE_TEST* to run all db_bench tests. The function *
 
 
 
+The output format of db_bench is below. The `fillrandom` means random write latency and throughput. The `readrandom` means random read latency and throughput. The `stall time` means the time for which the write operations are blocked (microseconds). The `dump time` means the flushing time (microseconds). The `wa` means the total write size into NVM (Bytes). We can calculate the write amplification ratio use `wa / (num * value_size) + 1`.
 
+```
+/home/jbyao/mioDB/build/db_bench --num=20000000 --value_size=4096 --benchmarks=fillrandom,readrandom --reads=1000000 --compression_ratio=1 --db=/mnt/persist-memory/nvm --dram_node=0 --nvm_node=4 --nvm_next_node=-1 --write_buffer_size=67108864 >> /home/jbyao/auto_result/db_bench_random_4KB.out
+Keys:       16 bytes each
+Values:     4096 bytes each (4096 bytes after compression)
+Entries:    20000000
+RawSize:    78430.2 MB (estimated)
+FileSize:   78430.2 MB (estimated)
+------------------------------------------------
+stall time: 0
+dump time:  0
+wa: 0
+fillrandom   :      10.300 micros/op;  380.7 MB/s
+readrandom   :      34.531 micros/op;  113.6 MB/s (1000000 of 20000000 found)
+stall time: 27854350
+dump time:  14296363
+wa: 120001366345
+```
 
 #### Macro-benchmark
 
@@ -156,6 +174,42 @@ Before running, we need to modify the files under *input/*. First, We set the *-
 After the YCSB finishes, it will output the throughput. MioDB uses YCSB to evaluate the tail latency and compare with NoveLSM, MatrixKV.
 
 For evaluating the performance of YCSB (Figure 7 in the paper), we can modify the *-P* to the workload load and A-F under the workloads/ directory (Note the distinction between 1KB and 4KB value size). For evaluating the tail latency of YCSB (Figure 8 and Table 2 in the paper), please use the ''tail.spec'' as the workload in the run mode.
+
+The output file of YCSB is long. We just show some key results in the file. The results below correspond to the IOPS of Load, A, B, C, D, E, and F from top to bottom.
+
+```
+********** load result **********
+loading records:20000000  use time:253.431 s  IOPS:78917.06 iops
+********** run result **********
+all opeartion records:100000  use time:1.466 s  IOPS:68233.40 iops
+
+read ops  :  49894  use time:  0.754 s  IOPS:66186.28 iops
+update ops:  50106  use time:  0.705 s  IOPS:71042.71 iops
+********** run result **********
+all opeartion records:100000  use time:1.110 s  IOPS:90116.48 iops
+
+read ops  :  95030  use time:  1.036 s  IOPS:91698.86 iops
+update ops:   4970  use time:  0.070 s  IOPS:71098.52 iops
+********** run result **********
+all opeartion records:100000  use time:1.022 s  IOPS:97834.15 iops
+
+read ops  : 100000  use time:  1.019 s  IOPS:98164.91 iops
+********** run result **********
+all opeartion records:100000  use time:2.154 s  IOPS:46420.97 iops
+
+insert ops:   5026  use time:  0.073 s  IOPS:68686.54 iops
+read ops  :  94974  use time:  2.077 s  IOPS:45715.90 iops
+********** run result **********
+all opeartion records:100000  use time:42.476 s  IOPS:2354.26 iops
+
+insert ops:   5014  use time:  0.151 s  IOPS:33305.88 iops
+scan ops  :  94986  use time: 42.320 s  IOPS:2244.47 iops
+********** run result **********
+all opeartion records:100000  use time:1.780 s  IOPS:56169.24 iops
+
+read ops  :  49927  use time:  0.587 s  IOPS:85027.14 iops
+rmw ops   :  50073  use time:  1.188 s  IOPS:42137.46 iops
+```
 
 #### Sensitivity Studies
 
