@@ -22,6 +22,7 @@ Before running MioDB codes, it's essential that you have already install softwar
     numactl-devel
     ndctl
     cmake ($>=$3.9.0)
+    snappy
 ```
 
 #### Data Dependencies
