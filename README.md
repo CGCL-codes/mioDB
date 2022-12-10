@@ -218,3 +218,7 @@ For the sensitivity studies of the size of dataset (Figure 10 and Figure 11 in t
 
 #### SSD-Supported MioDB Extension
 We have implemented SSD-Supported MioDB. We can download the code from the github repository of MioDB on ''ssd_extension'' branch. The compilation and evaluation method is same as the in-memory MioDB. The only difference between them is the *db_path* in db_bench and the *-dbpath* in YCSB. We need set these two parameters to a data path of SSD.
+
+#### Auto Scripts
+
+We also provide two auto scripts to reproduce the results in our paper. *test_sh/auto.sh* can automatically execute the db_bench and YCSB in the order of the paper for in-memory MioDB. *test_sh/parser.sh* can parse the result of *test_sh/auto.sh*. Before use these two scripts, we need modify some neccessary parameters at the beginning of the scripts. The most parameters are the same meaning as them in *test_sh/miodb_test.sh*. We also write some notes in the scripts, please check them before.
